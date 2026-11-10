@@ -10,12 +10,12 @@ Battleground: type two fighters, an AI "judge" names who'd win. Plain HTML/CSS/v
 
 ## Commands
 
-- Run locally: `vercel dev --yes` (serves the static files and `api/` on http://localhost:3000). Needs `vercel login` once and `GOOGLE_API_KEY_2` in `.env.local` or the shell environment (or `ANTHROPIC_API_KEY` with `VERDICT_PROVIDER=claude`).
+- Run locally: `vercel dev --yes` (serves the static files and `api/` on http://localhost:3000). Needs `vercel login` once and `GOOGLE_API_KEY` in `.env.local` or the shell environment (or `ANTHROPIC_API_KEY` with `VERDICT_PROVIDER=claude`).
 - Do **not** add a `dev` script to `package.json` that runs `vercel dev`: it makes `vercel dev` recursively invoke itself and fail.
 - Syntax-check without a server: `node --check app.js` and `node --check api/verdict.js`.
 - Exercise the endpoint: `curl -X POST http://localhost:3000/api/verdict -H 'content-type: application/json' -d '{"fighterA":"T-Rex","fighterB":"10 cows"}'`
 
-Env var note: the Gemini key is read from `GOOGLE_API_KEY_2` (the original `GOOGLE_API_KEY` stopped working). A Windows user env var set after a terminal/session started is not visible to it; open a new terminal (or pass the value explicitly when launching `vercel dev`) before debugging "Server is not configured".
+Env var note: the Gemini key is read from `GOOGLE_API_KEY`. It used to be `GOOGLE_API_KEY_2` (renamed back after the original key issue was settled); an old `GOOGLE_API_KEY` value left in the Windows or shell environment could be a stale key, so check that the variable holds the working key. A Windows user env var set after a terminal/session started is not visible to it; open a new terminal (or pass the value explicitly when launching `vercel dev`) before debugging "Server is not configured".
 
 Windows note: `vercel dev` fails with `EPERM ... symlink` unless Developer Mode is enabled (Settings > System > For developers) or the terminal runs as Administrator.
 
@@ -36,14 +36,14 @@ Two files carry almost all the logic, and they share an implicit contract:
 
 ## Current state (see `project-build.md` for detail)
 
-Stages 0-5 and 5.5 (arcade redesign) are built. The user ran the app in a browser after the redesign and reported it works and looks good; no automated tests exist. Stages 6-7 are not started.
+Stages 0-5 and 5.5 (arcade redesign) are built. The user ran the app in a browser after the redesign and reported it works and looks good; no automated tests exist. Stage 6 (hardening) is in progress: API validation, injection and realism checks were run and the Gemini 503 retry was added; the user also tried the app in Chrome, Edge and Firefox. Stage 7 (launch) is not started, although the app is already deployed on Vercel and the key was renamed to `GOOGLE_API_KEY` locally (confirmed working with `vercel dev`; the Vercel project env must also use that name before the next deploy).
 
 - Stage 4 (animations): loading-screen clash, result reveal, typewriter reasoning with Skip, `prefers-reduced-motion` fallback.
 - Stage 5 (BattleDex): "Save to BattleDex" saves `{ id, fighterA, fighterB, winner, reasoning, date }` to localStorage key `battleground.battledex.v1` (per browser and origin, newest first). The storage helper (`store.load/save/remove/clear`) lives in `app.js`, with try/catch, quota handling and an in-memory fallback when localStorage is blocked. The list has an empty state, per-entry Delete, and an inline "Clear all" confirm. Quota and blocked-storage paths were never explicitly tested.
 - Stage 5.5 (redesign): `index.html` and `style.css` came from Claude Design (arcade look: character-select slots, arena HUD with health bars, K.O. result screen, game-over error dialog). All error/info copy is written in a playful fight-night voice. The HUD badge says "Showdown" (a match is a single fight, not rounds).
   - Loading screen HUD names (`#hud-a`, `#hud-b`) are filled from the fighter names in `app.js`.
-  - Crowd posters: `#posters` is filled by `renderPosters()` in `app.js` on every fight with 2 or 3 random signs from the `POSTERS` list (`{A}`/`{B}` become shortened fighter names; text via `textContent`). Positions come from CSS custom properties (`--x` desktop, `--xm` phone) set per sign. Added after the user's last full test, so posters were not visually checked.
-  - "Fight again" ignores form submits for 600ms (`ignoreSubmitUntil`). This is a guess at a bug where Fight again re-ran the same fight (probably a double-click landing on FIGHT!); the user has not confirmed the fix.
+  - Crowd posters: `#posters` is filled by `renderPosters()` in `app.js` on every fight with 2 or 3 random signs from the `POSTERS` list (`{A}`/`{B}` become shortened fighter names; text via `textContent`). Positions come from CSS custom properties (`--x` desktop, `--xm` phone) set per sign. The user's screenshots show them rendering on the loading screen.
+  - "Fight again" ignores form submits for 600ms (`ignoreSubmitUntil`). This was added for a bug where Fight again re-ran the same fight (probably a double-click landing on FIGHT!); the user confirmed the fix works.
 - Real Claude calls were not verified end-to-end (`.env.local` had no key when last checked).
 
 ## Gotchas
