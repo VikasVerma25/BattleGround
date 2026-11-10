@@ -165,9 +165,11 @@
   </dialog>
 
   <script src="app.js"></script>
-  <script>
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  
+  <!-- Vercel Web Analytics -->
+  <script type="module">
+    import { inject } from 'https://cdn.jsdelivr.net/npm/@vercel/analytics@2.0.1/+esm';
+    inject();
   </script>
-  <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
