@@ -11,6 +11,7 @@ const MAX_TOKENS = 3000; // thinking tokens count toward this, so leave headroom
 const MAX_NAME_LENGTH = 50;
 const MAX_ATTEMPTS = 2; // first try + one retry on malformed output
 const UPSTREAM_TIMEOUT_MS = 25000;
+const TRANSIENT_TRIES = 4; // for fast upstream 500/503/504s: first try + 3 retries
 
 const SYSTEM_PROMPT = [
   'You are the Battleground Judge, the final word in a playful "who would win?" arena.',
@@ -130,35 +131,45 @@ async function askGemini(userContent) {
     'https://generativelanguage.googleapis.com/v1beta/models/' +
     encodeURIComponent(MODEL) + ':generateContent';
 
+  const requestBody = JSON.stringify({
+    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: [{ role: 'user', parts: [{ text: userContent }] }],
+    generationConfig: {
+      maxOutputTokens: MAX_TOKENS,
+      responseMimeType: 'application/json',
+      responseSchema: GEMINI_SCHEMA
+    }
+  });
+
+  // Gemini regularly answers 503 "high demand" for a moment. These come back fast,
+  // so retry a couple of times with a short pause before giving up.
   let res;
-  try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': process.env.GOOGLE_API_KEY_2
-      },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: 'user', parts: [{ text: userContent }] }],
-        generationConfig: {
-          maxOutputTokens: MAX_TOKENS,
-          responseMimeType: 'application/json',
-          responseSchema: GEMINI_SCHEMA
-        }
-      }),
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
-    });
-  } catch (err) {
-    console.error('Gemini request failed:', err && err.name, err && err.message);
-    throw new HttpError(502, UNAVAILABLE_MESSAGE);
+  for (let tries = 1; ; tries++) {
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': process.env.GOOGLE_API_KEY_2
+        },
+        body: requestBody,
+        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+      });
+    } catch (err) {
+      console.error('Gemini request failed:', err && err.name, err && err.message);
+      throw new HttpError(502, UNAVAILABLE_MESSAGE);
+    }
+    const transient = res.status === 503 || res.status === 500 || res.status === 504;
+    if (res.ok || !transient || tries >= TRANSIENT_TRIES) break;
+    console.error('Gemini transient error', res.status, '- retrying (' + tries + '/' + (TRANSIENT_TRIES - 1) + ')');
+    await new Promise(function (resolve) { setTimeout(resolve, 600 * tries); });
   }
 
   if (!res.ok) {
     // Log details server-side only; never expose upstream bodies to the client.
     const text = await res.text().catch(function () { return ''; });
     console.error('Gemini error', res.status, text.slice(0, 500));
-    if (res.status === 429) throw new HttpError(502, BUSY_MESSAGE);
+    if (res.status === 429 || res.status === 503) throw new HttpError(502, BUSY_MESSAGE);
     throw new HttpError(502, UNAVAILABLE_MESSAGE);
   }
 
