@@ -12,7 +12,7 @@
 ![Vercel](https://img.shields.io/badge/Vercel-serverless-000000?style=flat-square&logo=vercel&logoColor=white)
 ![Gemini](https://img.shields.io/badge/LLM-Gemini%20%7C%20Claude-8e75ff?style=flat-square)
 
-**[🎮 Live demo](https://battleground-c42pa36tn-v5-30e2.vercel.app/)**
+**[🎮 Live demo](https://battleground-fun.vercel.app/)**
 
 <img src="snapshots/1-input.png" alt="Battleground character-select screen with two fighters entered" width="860">
 
