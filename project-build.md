@@ -19,7 +19,7 @@ Each stage ends with a working, testable result. Don't start a stage until the p
   ```
 - `git init`, add `.gitignore` (`node_modules`, `.env*`, `.vercel`).
 - Install the Vercel CLI and run `vercel dev` for local frontend plus functions.
-- Create the Vercel project and link it. Add `GOOGLE_API_KEY_2` (Gemini, the current default) to local env and Vercel env settings. `ANTHROPIC_API_KEY` is only needed with `VERDICT_PROVIDER=claude`.
+- Create the Vercel project and link it. Add `GOOGLE_API_KEY` (Gemini, the current default) to local env and Vercel env settings. `ANTHROPIC_API_KEY` is only needed with `VERDICT_PROVIDER=claude`.
 - Deploy a "hello world" page and a stub `/api/verdict` returning `{ ok: true }`.
 
 **Done when:** the deployed URL shows the page and the stub endpoint responds.

@@ -1,6 +1,6 @@
 // POST /api/verdict  { fighterA, fighterB }  ->  { winner, reasoning, fighterA, fighterB }
 //
-// Provider: Gemini by default (needs GOOGLE_API_KEY_2). Set VERDICT_PROVIDER=claude to
+// Provider: Gemini by default (needs GOOGLE_API_KEY). Set VERDICT_PROVIDER=claude to
 // use Claude instead (needs ANTHROPIC_API_KEY). VERDICT_MODEL overrides the model.
 const Anthropic = require('@anthropic-ai/sdk');
 
@@ -150,7 +150,7 @@ async function askGemini(userContent) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-goog-api-key': process.env.GOOGLE_API_KEY_2
+          'x-goog-api-key': process.env.GOOGLE_API_KEY
         },
         body: requestBody,
         signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
@@ -221,7 +221,7 @@ async function getVerdict(a, b) {
 
 function missingKey() {
   if (PROVIDER === 'claude') return !process.env.ANTHROPIC_API_KEY && 'ANTHROPIC_API_KEY';
-  return !process.env.GOOGLE_API_KEY_2 && 'GOOGLE_API_KEY_2';
+  return !process.env.GOOGLE_API_KEY && 'GOOGLE_API_KEY';
 }
 
 // ---------- Handler ----------
