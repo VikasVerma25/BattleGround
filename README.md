@@ -84,6 +84,7 @@ The interesting part is getting a small, fast model to give **fair, realistic** 
 | LLM | Gemini `gemini-flash-lite-latest` (default) via plain `fetch`, or Claude `claude-haiku-5-5` via `@anthropic-ai/sdk` | Fast and cheap; switch with an env var |
 | Persistence | `localStorage` | No accounts or database needed for an MVP |
 | Hosting | Vercel | Static files and the function in one deploy |
+| Analytics | Vercel Web Analytics | Page-view stats, enabled by a small module script in `index.html` that loads `@vercel/analytics` from a CDN |
 
 ### Project structure
 

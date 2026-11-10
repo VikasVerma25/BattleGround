@@ -48,4 +48,4 @@ Stages 0-5 and 5.5 (arcade redesign) are built. The user ran the app in a browse
 
 ## Gotchas
 
-- `package.json` has no `scripts` and no build step; the Anthropic SDK is the only dependency.
+- `package.json` has no `scripts` and no build step. Dependencies: `@anthropic-ai/sdk` (used by `api/verdict.js` for the Claude provider) and `@vercel/analytics` (added by Vercel-generated PRs; `app.js` does not import it, and `index.html` instead loads `@vercel/analytics@2.0.1` as a `<script type="module">` from the jsDelivr CDN and calls `inject()`, so the package in `package.json` is unused by the page; it loads from the CDN on any host, I did not check what it does under `vercel dev`).
