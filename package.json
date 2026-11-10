@@ -1,0 +1,9 @@
+{
+  "name": "battleground",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Type two fighters, get an AI verdict on who'd win.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0"
+  }
+}

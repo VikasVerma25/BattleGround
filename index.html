@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Battleground</title>
+  <meta name="description" content="Type two fighters and get an AI verdict on who would win.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Battleground</h1>
+    <p class="tagline">Who would win?</p>
+  </header>
+
+  <main id="app" data-screen="input">
+
+    <!-- Screen 1: input (default) -->
+    <section id="screen-input" class="screen" aria-labelledby="input-title" tabindex="-1">
+      <h2 id="input-title" class="visually-hidden">Choose your fighters</h2>
+
+      <form id="fight-form" novalidate>
+        <div class="field">
+          <label for="fighter-a">Fighter A</label>
+          <input id="fighter-a" name="fighterA" type="text" maxlength="50"
+                 placeholder="e.g. a T-Rex" autocomplete="off" required>
+        </div>
+
+        <div class="vs-divider" aria-hidden="true">VS</div>
+
+        <div class="field">
+          <label for="fighter-b">Fighter B</label>
+          <input id="fighter-b" name="fighterB" type="text" maxlength="50"
+                 placeholder="e.g. 10 cows" autocomplete="off" required>
+        </div>
+
+        <p id="form-error" class="error" role="alert" hidden></p>
+
+        <button id="fight-btn" class="btn btn-primary" type="submit">Fight!</button>
+      </form>
+
+      <section id="battledex" class="battledex" aria-labelledby="battledex-title">
+        <div class="battledex-head">
+          <h2 id="battledex-title">BattleDex</h2>
+          <div class="battledex-clear">
+            <button id="clear-btn" class="btn btn-small" type="button" hidden>Clear all</button>
+            <span id="clear-confirm" class="clear-confirm" hidden>
+              Wipe every fight from history?
+              <button id="clear-yes" class="btn btn-small btn-danger" type="button">Wipe it</button>
+              <button id="clear-no" class="btn btn-small" type="button">Cancel</button>
+            </span>
+          </div>
+        </div>
+        <p id="battledex-notice" class="notice" role="status" hidden></p>
+        <p id="battledex-empty" class="empty">The BattleDex is empty. Go start some trouble!</p>
+        <ul id="battledex-list" class="battledex-list"></ul>
+      </section>
+    </section>
+
+    <!-- Screen 2: loading (hidden until a fight starts) -->
+    <section id="screen-loading" class="screen" aria-labelledby="loading-title" tabindex="-1" hidden>
+      <h2 id="loading-title" class="visually-hidden">Fight in progress</h2>
+      <div class="arena" role="status" aria-live="polite">
+        <span class="fighter fighter-left" id="loading-a">Fighter A</span>
+        <span class="clash" aria-hidden="true">VS</span>
+        <span class="fighter fighter-right" id="loading-b">Fighter B</span>
+      </div>
+      <p class="loading-note">Fists are flying. The judge is taking notes&hellip;</p>
+    </section>
+
+    <!-- Screen 3: result (hidden, covers the whole viewport) -->
+    <section id="screen-result" class="screen screen-result" aria-labelledby="result-title" tabindex="-1" hidden>
+      <div class="result-card">
+        <p class="result-label">Winner</p>
+        <h2 id="result-title" class="winner-name">Winner Name</h2>
+        <p class="matchup">
+          <span id="result-a" class="chip">Fighter A</span>
+          <span class="matchup-vs" aria-hidden="true">vs</span>
+          <span id="result-b" class="chip">Fighter B</span>
+        </p>
+        <!-- Screen readers get the full text at once; the typed-out copy is hidden from them. -->
+        <p class="reasoning">
+          <span id="reasoning-full" class="visually-hidden"></span>
+          <span id="reasoning-typed" aria-hidden="true"></span>
+        </p>
+        <button id="skip-btn" class="skip-btn" type="button" hidden>Skip &raquo;</button>
+        <div class="result-actions">
+          <button id="save-btn" class="btn" type="button">Save to BattleDex</button>
+          <button id="again-btn" class="btn btn-primary" type="button">Fight again</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Error pop-up -->
+  <dialog id="error-dialog" class="dialog" aria-labelledby="error-title" aria-describedby="error-message">
+    <h2 id="error-title">Down for the count!</h2>
+    <p id="error-message"></p>
+    <div class="dialog-actions">
+      <button id="error-retry" class="btn btn-primary" type="button">Rematch!</button>
+      <button id="error-close" class="btn" type="button">Close</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
