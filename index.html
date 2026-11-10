@@ -5,22 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Battleground</title>
   <meta name="description" content="Type two fighters and get an AI verdict on who would win.">
+  <meta name="theme-color" content="#0b0925">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="site-header">
-    <h1>Battleground</h1>
-    <p class="tagline">Who would win?</p>
-  </header>
-
   <main id="app" data-screen="input">
 
-    <!-- Screen 1: input (default) -->
+    <!-- Screen 1: input / character select (default) -->
     <section id="screen-input" class="screen" aria-labelledby="input-title" tabindex="-1">
+      <!-- The site header now lives inside this screen so the logo only shows here -->
+      <header class="site-header">
+        <p class="kicker" aria-hidden="true">&#9733; Insert coin &#9733;</p>
+        <h1 class="logo"><span class="logo-text" data-text="Battleground">Battleground</span></h1>
+        <p class="tagline">Who would win?</p>
+      </header>
       <h2 id="input-title" class="visually-hidden">Choose your fighters</h2>
 
       <form id="fight-form" novalidate>
-        <div class="field">
+        <div class="field slot slot-a">
+          <span class="slot-tag" aria-hidden="true">P1</span>
+          <div class="portrait" aria-hidden="true">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="34" r="19"/><path d="M12 100C12 68 30 58 50 58s38 10 38 42Z"/></svg>
+            <span class="portrait-q">?</span>
+          </div>
           <label for="fighter-a">Fighter A</label>
           <input id="fighter-a" name="fighterA" type="text" maxlength="50"
                  placeholder="e.g. a T-Rex" autocomplete="off" required>
@@ -28,7 +38,12 @@
 
         <div class="vs-divider" aria-hidden="true">VS</div>
 
-        <div class="field">
+        <div class="field slot slot-b">
+          <span class="slot-tag" aria-hidden="true">P2</span>
+          <div class="portrait" aria-hidden="true">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="34" r="19"/><path d="M12 100C12 68 30 58 50 58s38 10 38 42Z"/></svg>
+            <span class="portrait-q">?</span>
+          </div>
           <label for="fighter-b">Fighter B</label>
           <input id="fighter-b" name="fighterB" type="text" maxlength="50"
                  placeholder="e.g. 10 cows" autocomplete="off" required>
@@ -41,7 +56,10 @@
 
       <section id="battledex" class="battledex" aria-labelledby="battledex-title">
         <div class="battledex-head">
-          <h2 id="battledex-title">BattleDex</h2>
+          <h2 id="battledex-title">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v6a5 5 0 0 1-10 0z"/><path d="M7 5H3v2a4 4 0 0 0 4 4M17 5h4v2a4 4 0 0 1-4 4"/><path d="M12 14v4M8 21h8M9 18h6v3H9z"/></svg>
+            <span>BattleDex<span class="battledex-sub" aria-hidden="true">Your fight records</span></span>
+          </h2>
           <div class="battledex-clear">
             <button id="clear-btn" class="btn btn-small" type="button" hidden>Clear all</button>
             <span id="clear-confirm" class="clear-confirm" hidden>
@@ -52,38 +70,77 @@
           </div>
         </div>
         <p id="battledex-notice" class="notice" role="status" hidden></p>
-        <p id="battledex-empty" class="empty">The BattleDex is empty. Go start some trouble!</p>
+        <p id="battledex-empty" class="empty">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v6a5 5 0 0 1-10 0z"/><path d="M7 5H3v2a4 4 0 0 0 4 4M17 5h4v2a4 4 0 0 1-4 4"/><path d="M12 14v4M8 21h8M9 18h6v3H9z"/></svg>
+          The BattleDex is empty. Go start some trouble!
+        </p>
         <ul id="battledex-list" class="battledex-list"></ul>
       </section>
     </section>
 
-    <!-- Screen 2: loading (hidden until a fight starts) -->
+    <!-- Screen 2: loading / round start (hidden until a fight starts) -->
     <section id="screen-loading" class="screen" aria-labelledby="loading-title" tabindex="-1" hidden>
       <h2 id="loading-title" class="visually-hidden">Fight in progress</h2>
-      <div class="arena" role="status" aria-live="polite">
-        <span class="fighter fighter-left" id="loading-a">Fighter A</span>
-        <span class="clash" aria-hidden="true">VS</span>
-        <span class="fighter fighter-right" id="loading-b">Fighter B</span>
+      <div class="stage">
+        <!-- Arena scenery: sky, spotlights, crowd, floor (all decorative) -->
+        <div class="stage-world" aria-hidden="true">
+          <div class="stage-sky"></div>
+          <div class="spot spot-a"></div>
+          <div class="spot spot-b"></div>
+          <!-- Crowd signs: filled with random messages by app.js on every fight -->
+          <div class="posters" id="posters"></div>
+          <div class="crowd crowd-back"></div>
+          <div class="crowd crowd-front"></div>
+          <div class="floor"></div>
+        </div>
+
+        <!-- HUD: health bars + round badge. Names are optional, see .hud-name note below -->
+        <div class="hud" aria-hidden="true">
+          <div class="hud-side hud-a"><span class="hud-name" id="hud-a">P1</span><div class="hp"><span class="hp-fill"></span></div></div>
+          <div class="hud-badge"><span class="hud-round">Showdown</span><span class="hud-timer">99</span></div>
+          <div class="hud-side hud-b"><span class="hud-name" id="hud-b">P2</span><div class="hp"><span class="hp-fill"></span></div></div>
+        </div>
+
+        <div class="arena" role="status" aria-live="polite">
+          <span class="fighter fighter-left" id="loading-a">Fighter A</span>
+          <span class="clash" aria-hidden="true">VS</span>
+          <span class="fighter fighter-right" id="loading-b">Fighter B</span>
+        </div>
+        <p class="loading-note">Fists are flying. The judge is taking notes&hellip;</p>
       </div>
-      <p class="loading-note">Fists are flying. The judge is taking notes&hellip;</p>
     </section>
 
-    <!-- Screen 3: result (hidden, covers the whole viewport) -->
+    <!-- Screen 3: result / K.O. (hidden, covers the whole viewport) -->
     <section id="screen-result" class="screen screen-result" aria-labelledby="result-title" tabindex="-1" hidden>
+      <div class="ko" aria-hidden="true"><span class="ko-text">K.O.!</span></div>
+
       <div class="result-card">
-        <p class="result-label">Winner</p>
-        <h2 id="result-title" class="winner-name">Winner Name</h2>
-        <p class="matchup">
-          <span id="result-a" class="chip">Fighter A</span>
-          <span class="matchup-vs" aria-hidden="true">vs</span>
-          <span id="result-b" class="chip">Fighter B</span>
-        </p>
+        <!-- HUD: names above bars. JS toggles .is-winner / .is-loser on the chips;
+             the loser's bar drains to empty via the "chip + bar" sibling selector. -->
+        <div class="hud result-hud">
+          <div class="hud-side hud-a"><span id="result-a" class="chip">Fighter A</span><div class="hp" aria-hidden="true"><span class="hp-fill"></span></div></div>
+          <div class="hud-badge" aria-hidden="true"><span class="hud-round">Showdown</span><span class="hud-timer">K.O.</span></div>
+          <div class="hud-side hud-b"><span id="result-b" class="chip">Fighter B</span><div class="hp" aria-hidden="true"><span class="hp-fill"></span></div></div>
+        </div>
+
+        <div class="podium">
+          <p class="result-label">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19 2 7l6 5 4-8 4 8 6-5-1 12z"/></svg>
+            Winner!
+          </p>
+          <h2 id="result-title" class="winner-name">Winner Name</h2>
+        </div>
+
         <!-- Screen readers get the full text at once; the typed-out copy is hidden from them. -->
-        <p class="reasoning">
-          <span id="reasoning-full" class="visually-hidden"></span>
-          <span id="reasoning-typed" aria-hidden="true"></span>
-        </p>
-        <button id="skip-btn" class="skip-btn" type="button" hidden>Skip &raquo;</button>
+        <div class="dialogue">
+          <span class="dialogue-tag" aria-hidden="true">Judge&rsquo;s ruling</span>
+          <p class="reasoning">
+            <span id="reasoning-full" class="visually-hidden"></span>
+            <span id="reasoning-typed" aria-hidden="true"></span>
+          </p>
+          <button id="skip-btn" class="skip-btn" type="button" hidden>Skip &raquo;</button>
+        </div>
+
         <div class="result-actions">
           <button id="save-btn" class="btn" type="button">Save to BattleDex</button>
           <button id="again-btn" class="btn btn-primary" type="button">Fight again</button>
@@ -93,13 +150,17 @@
 
   </main>
 
-  <!-- Error pop-up -->
+  <!-- Error pop-up: "Down for the count!" -->
   <dialog id="error-dialog" class="dialog" aria-labelledby="error-title" aria-describedby="error-message">
-    <h2 id="error-title">Down for the count!</h2>
-    <p id="error-message"></p>
-    <div class="dialog-actions">
-      <button id="error-retry" class="btn btn-primary" type="button">Rematch!</button>
-      <button id="error-close" class="btn" type="button">Close</button>
+    <div class="dialog-body">
+      <div class="dialog-stars" aria-hidden="true"><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span></div>
+      <p class="dialog-kicker" aria-hidden="true">Game over?</p>
+      <h2 id="error-title">Down for the count!</h2>
+      <p id="error-message"></p>
+      <div class="dialog-actions">
+        <button id="error-retry" class="btn btn-primary" type="button">Rematch!</button>
+        <button id="error-close" class="btn" type="button">Close</button>
+      </div>
     </div>
   </dialog>
 

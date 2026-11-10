@@ -36,11 +36,15 @@ Two files carry almost all the logic, and they share an implicit contract:
 
 ## Current state (see `project-build.md` for detail)
 
-Stages 0-3 are built. Code for Stage 4 and Stage 5 is also in place, but only syntax-checked (`node --check app.js`) and not exercised in a browser by me; treat both as untested until run.
+Stages 0-5 and 5.5 (arcade redesign) are built. The user ran the app in a browser after the redesign and reported it works and looks good; no automated tests exist. Stages 6-7 are not started.
 
-- Stage 4 (found already present in `app.js`/`style.css`, not re-verified): loading-screen clash animation, result reveal, typewriter reasoning with a Skip button, `prefers-reduced-motion` fallback.
-- Stage 5 (BattleDex, written this session, untested): "Save to BattleDex" saves `{ id, fighterA, fighterB, winner, reasoning, date }` to localStorage key `battleground.battledex.v1` (per browser and origin, newest first). The storage helper (`store.load/save/remove/clear`) is inside `app.js`, with try/catch, quota handling and an in-memory fallback when localStorage is blocked. The list has an empty state, per-entry Delete, and an inline "Clear all" confirm. Not yet checked: persistence across reload, quota/blocked-storage paths, mobile layout.
-- Stages 6-7 are not started. Real Claude calls were not verified end-to-end (`.env.local` had no key when last checked).
+- Stage 4 (animations): loading-screen clash, result reveal, typewriter reasoning with Skip, `prefers-reduced-motion` fallback.
+- Stage 5 (BattleDex): "Save to BattleDex" saves `{ id, fighterA, fighterB, winner, reasoning, date }` to localStorage key `battleground.battledex.v1` (per browser and origin, newest first). The storage helper (`store.load/save/remove/clear`) lives in `app.js`, with try/catch, quota handling and an in-memory fallback when localStorage is blocked. The list has an empty state, per-entry Delete, and an inline "Clear all" confirm. Quota and blocked-storage paths were never explicitly tested.
+- Stage 5.5 (redesign): `index.html` and `style.css` came from Claude Design (arcade look: character-select slots, arena HUD with health bars, K.O. result screen, game-over error dialog). All error/info copy is written in a playful fight-night voice. The HUD badge says "Showdown" (a match is a single fight, not rounds).
+  - Loading screen HUD names (`#hud-a`, `#hud-b`) are filled from the fighter names in `app.js`.
+  - Crowd posters: `#posters` is filled by `renderPosters()` in `app.js` on every fight with 2 or 3 random signs from the `POSTERS` list (`{A}`/`{B}` become shortened fighter names; text via `textContent`). Positions come from CSS custom properties (`--x` desktop, `--xm` phone) set per sign. Added after the user's last full test, so posters were not visually checked.
+  - "Fight again" ignores form submits for 600ms (`ignoreSubmitUntil`). This is a guess at a bug where Fight again re-ran the same fight (probably a double-click landing on FIGHT!); the user has not confirmed the fix.
+- Real Claude calls were not verified end-to-end (`.env.local` had no key when last checked).
 
 ## Gotchas
 

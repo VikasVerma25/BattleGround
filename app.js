@@ -19,6 +19,7 @@
   var dialog = document.getElementById('error-dialog');
   var dialogMessage = document.getElementById('error-message');
   var inFlight = false;
+  var ignoreSubmitUntil = 0;
 
   // ---------- Screens ----------
 
@@ -382,11 +383,72 @@
     renderDex();
   });
 
+  // ---------- Crowd posters (loading screen) ----------
+
+  // {A} and {B} are replaced with the (shortened) fighter names.
+  var POSTERS = [
+    'GO {A}!', '{B} FOR THE WIN', 'TEAM {A}', 'TEAM {B}', '{A} FOREVER', '{B} OR BUST',
+    'I BET MY LUNCH ON {A}', 'I BET MY LUNCH ON {B}', '{A} IS MY HERO', '{B} IS MY HERO',
+    'FINISH HIM!', 'ROUND? NO, ONE SHOT', 'MY MOM IS HERE', 'HI MOM!', 'SNACKS AFTER THIS',
+    'DO A BARREL ROLL', 'NO REFUNDS', 'WINNER GETS PIZZA', 'LOSER DOES DISHES',
+    'FIGHT! FIGHT! FIGHT!', 'PUNCH IT!', 'BONK!', 'KAPOW!', 'WHO WOULD WIN?',
+    'I CAME FOR THE CHAOS', 'THIS WILL HURT', 'WORTH THE TICKET', 'MORE POPCORN PLEASE',
+    'ASK ME ABOUT {A}', 'ASK ME ABOUT {B}', 'JUDGE, BE FAIR!', 'THE JUDGE IS WATCHING',
+    'NO CAPES', 'WE WANT A REMATCH', 'THIS IS FINE', 'CLEAN FIGHT, PLEASE',
+    'SOMEONE CALL A VET', 'SOMEONE CALL A LAWYER', 'LOUD NOISES!', 'ARENA OF DOOM',
+    'BATTLEGROUND OR BUST', 'I SAW IT COMING', 'IT WAS ALL A DREAM', 'WIN IT FOR GRANDMA',
+    'BRING IT ON', 'TO THE MOON!', 'SEND IT!', 'OUCH IN ADVANCE', 'PLOT TWIST INCOMING',
+    'POWERED BY SNACKS', 'EYES UP, FOLKS', 'ABSOLUTE UNIT', 'UNDERDOG ENERGY',
+    'BIG IF TRUE', 'I HAVE FRONT ROW SEATS', 'SIGN HELD UPSIDE DOWN', 'READ THIS SIGN',
+    'BEST FIGHT EVER (SO FAR)', 'WHERE IS MY NACHO?', 'LET THEM COOK'
+  ];
+  // Horizontal slots (% from left): 5 on desktop, 3 on phones. 2-3 signs per fight.
+  var SLOTS_DESKTOP = [2, 21, 40, 60, 79];
+  var SLOTS_MOBILE = { 2: [1, 68], 3: [1, 34.5, 68] };
+  var postersEl = document.getElementById('posters');
+
+  function shortName(name) {
+    var n = name.toUpperCase();
+    return n.length > 14 ? n.slice(0, 13) + '…' : n;
+  }
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // Pick fresh random signs for this fight. Text goes in via textContent.
+  function renderPosters(nameA, nameB) {
+    postersEl.textContent = '';
+    var count = 2 + Math.floor(Math.random() * 2); // 2 or 3
+    var picks = shuffle(POSTERS).slice(0, count);
+    var spots = shuffle(SLOTS_DESKTOP).slice(0, count).sort(function (x, y) { return x - y; });
+    picks.forEach(function (text, i) {
+      var el = document.createElement('div');
+      el.className = 'poster poster-c' + (1 + Math.floor(Math.random() * 4));
+      el.style.setProperty('--x', spots[i] + '%');
+      el.style.setProperty('--xm', SLOTS_MOBILE[count][i] + '%');
+      el.style.setProperty('--tilt', (Math.random() * 12 - 6).toFixed(1) + 'deg');
+      el.style.setProperty('--lift', Math.round(Math.random() * 22) + 'px');
+      el.style.setProperty('--delay', '-' + (Math.random() * 1.2).toFixed(2) + 's');
+      var board = document.createElement('span');
+      board.textContent = text.replace('{A}', shortName(nameA)).replace('{B}', shortName(nameB));
+      el.appendChild(board);
+      postersEl.appendChild(el);
+    });
+  }
+
   // ---------- Fight flow ----------
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     if (inFlight) return;
+    // Swallow a double-click/double-tap or a held Enter that carries over from "Fight again".
+    if (Date.now() < ignoreSubmitUntil) return;
 
     formError.hidden = true;
     formError.textContent = '';
@@ -403,6 +465,9 @@
     fightBtn.disabled = true;
     document.getElementById('loading-a').textContent = names.a;
     document.getElementById('loading-b').textContent = names.b;
+    renderPosters(names.a, names.b);
+    document.getElementById('hud-a').textContent = names.a;
+    document.getElementById('hud-b').textContent = names.b;
     showScreen('loading');
 
     try {
@@ -423,6 +488,7 @@
 
   document.getElementById('again-btn').addEventListener('click', function () {
     stopTyping();
+    ignoreSubmitUntil = Date.now() + 600;
     showScreen('input');
     inputA.focus();
   });
